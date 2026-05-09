@@ -1,0 +1,30 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Dashboard — Supervisor
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-gray-500 text-sm">Presentes Hoy</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ App\Models\Asistencia::whereDate('fecha', today())->where('estado','presente')->count() }}</p>
+                </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-gray-500 text-sm">Proyectos Activos</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ App\Models\Proyecto::where('estado','activo')->count() }}</p>
+                </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-gray-500 text-sm">Novedades Pendientes</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ App\Models\Novedad::where('estado','pendiente')->count() }}</p>
+                </div>
+            </div>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Bienvenido, {{ auth()->user()->name }}</h3>
+                <p class="text-gray-600">Desde aquí puedes asignar personal, registrar tiempos y gestionar novedades.</p>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
