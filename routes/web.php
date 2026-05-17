@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -38,6 +39,17 @@ Route::middleware(['auth', 'rol:supervisor'])->prefix('supervisor')->name('super
     // Novedades
     Route::get('/novedades', [SupervisorController::class, 'novedades'])->name('novedades');
     Route::post('/novedades/guardar', [SupervisorController::class, 'guardarNovedad'])->name('novedades.guardar');
+});
+
+// ─── MÓDULO: ADMIN ────────────────────────────────────────────────────────
+Route::middleware(['auth', 'rol:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Proyectos
+    Route::get('/proyectos/crear', [AdminController::class, 'crearProyecto'])->name('proyectos.crear');
+    Route::post('/proyectos/guardar', [AdminController::class, 'guardarProyecto'])->name('proyectos.guardar');
+    Route::get('/proyectos/{id}/editar', [AdminController::class, 'editarProyecto'])->name('proyectos.editar');
+    Route::patch('/proyectos/{id}', [AdminController::class, 'actualizarProyecto'])->name('proyectos.actualizar');
 });
 
 // ─── PERFIL ───────────────────────────────────────────────────────────────

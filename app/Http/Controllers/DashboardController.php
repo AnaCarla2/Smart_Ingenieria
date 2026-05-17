@@ -20,7 +20,7 @@ class DashboardController extends Controller
             case 'director':
                 return view('dashboards.director');
             case 'admin':
-                return view('dashboards.admin');
+                return redirect()->route('admin.dashboard');
             case 'supervisor':
                 return redirect()->route('supervisor.dashboard');
             case 'trabajador':

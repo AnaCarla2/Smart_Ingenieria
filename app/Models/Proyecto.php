@@ -8,17 +8,18 @@ class Proyecto extends Model
 {
     protected $table = 'proyectos';
 
-    protected $fillable = [
-        'nombre',
-        'descripcion',
-        'fecha_inicio',
-        'fecha_fin',
-        'presupuesto',
-        'costo_fabricacion',
-        'estado',
-        'es_platano',
-        'user_id',
-    ];
+   protected $fillable = [
+    'nombre',
+    'descripcion',
+    'fecha_inicio',
+    'fecha_fin',
+    'presupuesto',
+    'costo_fabricacion',
+    'estado',
+    'es_platano',
+    'observaciones',
+    'user_id',
+];
 
     protected $casts = [
         'es_platano' => 'boolean',
