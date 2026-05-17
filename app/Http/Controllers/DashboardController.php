@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    /**
+     * Redirige al usuario a su dashboard según su rol.
+     */
     public function index()
     {
         $usuario = auth()->user();
@@ -19,7 +22,7 @@ class DashboardController extends Controller
             case 'admin':
                 return view('dashboards.admin');
             case 'supervisor':
-                return view('dashboards.supervisor');
+                return redirect()->route('supervisor.dashboard');
             case 'trabajador':
                 return view('dashboards.trabajador');
             default:
