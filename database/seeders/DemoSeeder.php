@@ -35,19 +35,21 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($usuarios as $u) {
-            $userId = DB::table('users')->updateOrInsert(
+            $rol = DB::table('roles')->where('nombre', $u['rol'])->first();
+
+            DB::table('users')->updateOrInsert(
                 ['email' => $u['email']],
                 [
                     'name' => $u['name'],
                     'email' => $u['email'],
                     'password' => Hash::make('password'),
+                    'rol_id' => $rol->id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]
             );
 
             $user = DB::table('users')->where('email', $u['email'])->first();
-            $rol = DB::table('roles')->where('nombre', $u['rol'])->first();
 
             DB::table('empleados')->updateOrInsert(
                 ['user_id' => $user->id],
