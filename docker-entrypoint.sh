@@ -14,6 +14,7 @@ php artisan view:clear
 # Recachear
 php artisan config:cache
 php artisan migrate --force
+php artisan db:seed --force
 
 # Arrancar Apache
 exec "$@"
