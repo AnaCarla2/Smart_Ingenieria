@@ -1,5 +1,15 @@
 <?php
 
+Route::get('/debug-error', function () {
+    return response()->json([
+        'app_key' => config('app.key') ? 'SET' : 'MISSING',
+        'app_env' => config('app.env'),
+        'db_host' => config('database.connections.mysql.host'),
+        'db_name' => config('database.connections.mysql.database'),
+        'storage_writable' => is_writable(storage_path()),
+    ]);
+});
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsistenciaController;
