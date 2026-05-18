@@ -3,36 +3,44 @@ FROM php:8.3-apache
 # Instalar extensiones necesarias
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev \
-    libxml2-dev libzip-dev nodejs npm \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd
+    libxml2-dev libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Instalar Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configurar Apache directamente
+# Configurar Apache
 RUN echo '<VirtualHost *:80>\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
         AllowOverride All\n\
         Require all granted\n\
     </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf \
+    && a2enmod rewrite
 
-RUN a2enmod rewrite
-
-# Logs PHP en stderr
-RUN echo "log_errors = On" >> /usr/local/etc/php/php.ini \
-    && echo "error_log = /dev/stderr" >> /usr/local/etc/php/php.ini
-
-# Copiar el proyecto
+# Copiar solo archivos de dependencias primero (cache de Docker)
 WORKDIR /var/www/html
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+COPY package.json package-lock.json ./
+RUN npm ci --prefer-offline
+
+# Copiar el resto del proyecto
 COPY . .
 
-# Instalar dependencias PHP
-RUN composer install --no-dev --optimize-autoloader
+# Compilar assets
+RUN npm run build
 
-# Instalar dependencias JS y compilar assets
-RUN npm install && npm run build
+# Finalizar composer
+RUN composer run-script post-autoload-dump || true
 
 # Permisos de Laravel
 RUN chown -R www-data:www-data /var/www/html/storage \
