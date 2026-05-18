@@ -17,6 +17,10 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/conf-available/docker-php.conf \
     /etc/apache2/apache2.conf
 RUN a2enmod rewrite
+# Mostrar errores PHP en logs
+RUN echo "log_errors = On" >> /usr/local/etc/php/php.ini \
+    && echo "error_log = /dev/stderr" >> /usr/local/etc/php/php.ini \
+    && echo "display_errors = Off" >> /usr/local/etc/php/php.ini
 
 # Copiar el proyecto
 WORKDIR /var/www/html
