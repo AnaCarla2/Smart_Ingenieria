@@ -9,18 +9,20 @@ RUN apt-get update && apt-get install -y \
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configurar Apache para que apunte a /public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/conf-available/docker-php.conf \
-    /etc/apache2/apache2.conf
+# Configurar Apache directamente
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
 RUN a2enmod rewrite
-# Mostrar errores PHP en logs
+
+# Logs PHP en stderr
 RUN echo "log_errors = On" >> /usr/local/etc/php/php.ini \
-    && echo "error_log = /dev/stderr" >> /usr/local/etc/php/php.ini \
-    && echo "display_errors = Off" >> /usr/local/etc/php/php.ini
+    && echo "error_log = /dev/stderr" >> /usr/local/etc/php/php.ini
 
 # Copiar el proyecto
 WORKDIR /var/www/html
