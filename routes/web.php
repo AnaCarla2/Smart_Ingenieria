@@ -1,5 +1,12 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AsistenciaController;
+use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Route;
+
 Route::get('/debug-error', function () {
     return response()->json([
         'app_key' => config('app.key') ? 'SET' : 'MISSING',
@@ -9,13 +16,6 @@ Route::get('/debug-error', function () {
         'storage_writable' => is_writable(storage_path()),
     ]);
 });
-
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AsistenciaController;
-use App\Http\Controllers\SupervisorController;
-use App\Http\Controllers\AdminController;
-use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -35,18 +35,15 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware(['auth', 'rol:supervisor'])->prefix('supervisor')->name('supervisor.')->group(function () {
     Route::get('/dashboard', [SupervisorController::class, 'dashboard'])->name('dashboard');
 
-    // Trabajadores
     Route::get('/trabajadores', [SupervisorController::class, 'trabajadores'])->name('trabajadores');
     Route::get('/trabajadores/crear', [SupervisorController::class, 'crearTrabajador'])->name('trabajadores.crear');
     Route::post('/trabajadores/guardar', [SupervisorController::class, 'guardarTrabajador'])->name('trabajadores.guardar');
     Route::patch('/trabajadores/{id}/inactivar', [SupervisorController::class, 'inactivarTrabajador'])->name('trabajadores.inactivar');
 
-    // Asignaciones
     Route::get('/asignaciones', [SupervisorController::class, 'asignaciones'])->name('asignaciones');
     Route::post('/asignaciones/guardar', [SupervisorController::class, 'guardarAsignacion'])->name('asignaciones.guardar');
     Route::delete('/asignaciones/{id}', [SupervisorController::class, 'eliminarAsignacion'])->name('asignaciones.eliminar');
 
-    // Novedades
     Route::get('/novedades', [SupervisorController::class, 'novedades'])->name('novedades');
     Route::post('/novedades/guardar', [SupervisorController::class, 'guardarNovedad'])->name('novedades.guardar');
 });
@@ -55,7 +52,6 @@ Route::middleware(['auth', 'rol:supervisor'])->prefix('supervisor')->name('super
 Route::middleware(['auth', 'rol:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-    // Proyectos
     Route::get('/proyectos/crear', [AdminController::class, 'crearProyecto'])->name('proyectos.crear');
     Route::post('/proyectos/guardar', [AdminController::class, 'guardarProyecto'])->name('proyectos.guardar');
     Route::get('/proyectos/{id}/editar', [AdminController::class, 'editarProyecto'])->name('proyectos.editar');
