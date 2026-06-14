@@ -63,9 +63,7 @@
         <a href="{{ route('supervisor.dashboard') }}" class="nav-item">
             <span class="nav-icon">📊</span> Dashboard
         </a>
-        <a href="{{ route('supervisor.trabajadores') }}" class="nav-item">
-            <span class="nav-icon">👷</span> Trabajadores
-        </a>
+ 
         <a href="{{ route('supervisor.asignaciones') }}" class="nav-item active">
             <span class="nav-icon">📋</span> Asignaciones
         </a>

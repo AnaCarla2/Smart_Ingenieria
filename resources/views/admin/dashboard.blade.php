@@ -15,7 +15,6 @@
         .nav-item:hover{background:#27272a;color:#fff}
         .nav-item.active{background:#1c1c1e;color:#f59e0b;border:1px solid #27272a}
         .nav-icon{font-size:16px;width:20px;text-align:center}
-        .sidebar-footer{padding:12px 8px;border-top:1px solid #27272a}
         .main{margin-left:220px;flex:1;display:flex;flex-direction:column}
         .topbar{background:#111113;border-bottom:1px solid #27272a;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
         .content{padding:24px;flex:1}
@@ -46,6 +45,8 @@
         .btn-amarillo:hover{background:#fbbf24}
         .btn-gris{background:#27272a;color:#fff}
         .btn-gris:hover{background:#3f3f46}
+        .btn-rojo{background:#7f1d1d;color:#f87171;border:1px solid #dc2626}
+        .btn-rojo:hover{background:#991b1b}
         .alert-ok{background:#14532d;border:1px solid #16a34a;border-radius:8px;padding:12px 16px;color:#86efac;font-size:13px;margin-bottom:16px}
         .alerta-item{padding:12px 16px;border-bottom:1px solid #27272a;display:flex;align-items:center;gap:12px}
         .alerta-item:last-child{border-bottom:none}
@@ -77,14 +78,6 @@
             <span class="nav-icon">👷</span> Nuevo Trabajador
         </a>
     </nav>
-    <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="nav-item" style="width:100%;background:none;border:none;text-align:left">
-                <span class="nav-icon">🚪</span> Cerrar sesión
-            </button>
-        </form>
-    </div>
 </aside>
 
 {{-- MAIN --}}
@@ -94,13 +87,18 @@
             <p style="color:#fff;font-weight:700;font-size:15px">Dashboard</p>
             <p style="color:#52525b;font-size:12px">{{ now()->format('l, d \d\e F \d\e Y') }}</p>
         </div>
-        <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
             <div style="width:32px;height:32px;border-radius:50%;background:#27272a;border:1px solid #3f3f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#f59e0b">
                 {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
             </div>
             <div>
                 <p style="color:#fff;font-size:12px;font-weight:700">{{ auth()->user()->name }}</p>
-                <p style="color:#52525b;font-size:11px">Administrador</p>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" style="background:none;border:none;color:#71717a;font-size:11px;cursor:pointer;padding:0;font-family:inherit">
+                        🚪 Cerrar sesión
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -227,7 +225,8 @@
                 </tbody>
             </table>
         </div>
-     {{-- Lista de trabajadores --}}
+
+        {{-- Lista de trabajadores --}}
         <div class="section">
             <div class="section-head">
                 <span class="section-title">👷 Trabajadores activos</span>
@@ -292,6 +291,7 @@
                 </tbody>
             </table>
         </div>
+
     </div>
 </div>
 

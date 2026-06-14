@@ -32,8 +32,9 @@
         .btn-gris{background:#27272a;color:#fff}
         .btn-gris:hover{background:#3f3f46}
         .alert-err{background:#7f1d1d;border:1px solid #dc2626;border-radius:8px;padding:12px 16px;color:#fca5a5;font-size:13px;margin-bottom:16px}
-        .info-box{background:#1c3a2b;border:1px solid #16a34a;border-radius:8px;padding:12px 16px;color:#86efac;font-size:12px;margin-bottom:20px}
     </style>
+</head>
+    
 </head>
 <body>
 
@@ -85,9 +86,6 @@
             </div>
         @endif
 
-        <div class="info-box">
-            💡 La contraseña inicial del trabajador será <strong>password</strong>. Puede cambiarla después desde su perfil.
-        </div>
 
         <div class="form-card">
             <form method="POST" action="{{ route('admin.trabajadores.guardar') }}">
