@@ -81,9 +81,7 @@
             <p style="color:#fff;font-weight:700;font-size:15px">Trabajadores</p>
             <p style="color:#52525b;font-size:12px">Gestión de personal activo</p>
         </div>
-        <a href="{{ route('supervisor.trabajadores.crear') }}" class="btn btn-amarillo">
-            + Nuevo trabajador
-        </a>
+       
     </div>
 
     <div class="content">

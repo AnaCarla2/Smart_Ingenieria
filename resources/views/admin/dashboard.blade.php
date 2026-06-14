@@ -73,6 +73,9 @@
         <a href="{{ route('admin.proyectos.crear') }}" class="nav-item">
             <span class="nav-icon">🏗️</span> Nuevo Proyecto
         </a>
+        <a href="{{ route('admin.trabajadores.crear') }}" class="nav-item">
+            <span class="nav-icon">👷</span> Nuevo Trabajador
+        </a>
     </nav>
     <div class="sidebar-footer">
         <form method="POST" action="{{ route('logout') }}">
@@ -224,7 +227,71 @@
                 </tbody>
             </table>
         </div>
-
+     {{-- Lista de trabajadores --}}
+        <div class="section">
+            <div class="section-head">
+                <span class="section-title">👷 Trabajadores activos</span>
+                <a href="{{ route('admin.trabajadores.crear') }}" class="btn btn-amarillo">+ Nuevo trabajador</a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trabajador</th>
+                        <th>Cédula</th>
+                        <th>Cargo</th>
+                        <th>Teléfono</th>
+                        <th>Salario</th>
+                        <th>Ingreso</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($trabajadores as $empleado)
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px">
+                                    <div style="width:34px;height:34px;border-radius:50%;background:#27272a;border:1px solid #3f3f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#f59e0b">
+                                        {{ strtoupper(substr($empleado->user->name, 0, 2)) }}
+                                    </div>
+                                    <div>
+                                        <p style="color:#fff;font-weight:700;font-size:13px">{{ $empleado->user->name }}</p>
+                                        <p style="color:#52525b;font-size:11px">{{ $empleado->user->email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ $empleado->cedula }}</td>
+                            <td>{{ $empleado->cargo }}</td>
+                            <td>{{ $empleado->telefono ?? '—' }}</td>
+                            <td style="color:#f59e0b;font-weight:700">
+                                ${{ number_format($empleado->salario, 0, ',', '.') }}
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($empleado->fecha_ingreso)->format('d/m/Y') }}</td>
+                            <td><span class="badge badge-verde">Activo</span></td>
+                            <td>
+                                <div style="display:flex;gap:6px">
+                                    <a href="{{ route('admin.trabajadores.editar', $empleado->id) }}"
+                                        class="btn btn-gris" style="padding:5px 10px;font-size:11px">Editar</a>
+                                    <form method="POST" action="{{ route('admin.trabajadores.inactivar', $empleado->id) }}"
+                                        onsubmit="return confirm('¿Inactivar a {{ $empleado->user->name }}?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-rojo"
+                                            style="padding:5px 10px;font-size:11px">Inactivar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" style="text-align:center;color:#52525b;padding:32px">
+                                No hay trabajadores activos registrados
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
