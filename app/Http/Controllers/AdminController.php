@@ -14,91 +14,93 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
-    /**
-     * Dashboard principal del administrador.
-     * Muestra métricas generales, alertas, proyectos y trabajadores.
-     */
-    public function dashboard()
-    {
-        // Métricas generales
-        $totalProyectos      = Proyecto::count();
-        $proyectosActivos    = Proyecto::where('estado', 'activo')->count();
-        $totalEmpleados      = Empleado::where('estado', 'activo')->count();
-        $novedadesPendientes = Novedad::where('estado', 'pendiente')->count();
+   /**
+ * Dashboard del administrador — solo información del día actual.
+ */
+public function dashboard(Request $request)
+{
+    $hoy = $request->get('fecha', Carbon::today()->format('Y-m-d'));
+    $totalEmpleados = Empleado::where('estado', 'activo')->count();
 
-        // Alertas del sistema
-        $alertas = [];
+    // Métricas del día
+    $activosHoy = \App\Models\Asistencia::whereDate('fecha', $hoy)
+        ->where('estado', 'presente')->count();
+    $inactivosHoy      = $totalEmpleados - $activosHoy;
+    $novedadesHoy      = Novedad::whereDate('fecha_inicio', $hoy)->count();
+    $proyectosActivos  = Proyecto::where('estado', 'activo')->count();
 
-        // Proyectos desfasados en tiempo
-        $proyectosDesfasadosTiempo = Proyecto::where('estado', '!=', 'finalizado')
-            ->whereNotNull('fecha_fin')
-            ->where('fecha_fin', '<', now()->format('Y-m-d'))
-            ->get();
+    // Asistencia del día
+    $asistencias = \App\Models\Asistencia::whereDate('fecha', $hoy)
+        ->with('empleado.user')
+        ->get();
 
-        foreach ($proyectosDesfasadosTiempo as $p) {
-            $alertas[] = [
-                'tipo'    => 'tiempo',
-                'mensaje' => "⏰ El proyecto \"{$p->nombre}\" está desfasado en tiempo.",
-                'color'   => 'rojo',
-            ];
-        }
+    // Asignaciones del día
+    $asignaciones = Asignacion::whereDate('fecha', $hoy)
+        ->with('empleado.user', 'proyecto')
+        ->get();
 
-        // Proyectos desfasados en presupuesto
-        $proyectosDesfasadosPresupuesto = Proyecto::where('estado', '!=', 'finalizado')
-            ->whereRaw('costo_fabricacion > presupuesto')
-            ->get();
+    // Alertas del sistema
+    $alertas = [];
 
-        foreach ($proyectosDesfasadosPresupuesto as $p) {
-            $alertas[] = [
-                'tipo'    => 'presupuesto',
-                'mensaje' => "💰 El proyecto \"{$p->nombre}\" ha superado el presupuesto.",
-                'color'   => 'rojo',
-            ];
-        }
+    $proyectosDesfasadosTiempo = Proyecto::where('estado', '!=', 'finalizado')
+        ->whereNotNull('fecha_fin')
+        ->where('fecha_fin', '<', Carbon::today()->format('Y-m-d'))
+        ->get();
 
-        // Proyectos creados pero no iniciados
-        $proyectosNoIniciados = Proyecto::where('estado', 'pendiente')
-            ->where('fecha_inicio', '<', now()->format('Y-m-d'))
-            ->get();
-
-        foreach ($proyectosNoIniciados as $p) {
-            $alertas[] = [
-                'tipo'    => 'sin_iniciar',
-                'mensaje' => "🚨 El proyecto \"{$p->nombre}\" debió iniciar el " . Carbon::parse($p->fecha_inicio)->format('d/m/Y') . " y aún no ha comenzado.",
-                'color'   => 'amarillo',
-            ];
-        }
-
-        // Lista de proyectos
-        $proyectos = Proyecto::orderBy('created_at', 'desc')->get();
-
-        // Lista de trabajadores activos
-        $trabajadores = Empleado::where('estado', 'activo')
-            ->with('user', 'rol')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('admin.dashboard', compact(
-            'totalProyectos',
-            'proyectosActivos',
-            'totalEmpleados',
-            'novedadesPendientes',
-            'alertas',
-            'proyectos',
-            'trabajadores'
-        ));
+    foreach ($proyectosDesfasadosTiempo as $p) {
+        $alertas[] = [
+            'tipo'    => 'tiempo',
+            'mensaje' => "⏰ El proyecto \"{$p->nombre}\" está desfasado en tiempo.",
+            'color'   => 'rojo',
+        ];
     }
+
+    $proyectosDesfasadosPresupuesto = Proyecto::where('estado', '!=', 'finalizado')
+        ->whereRaw('costo_fabricacion > presupuesto')->get();
+
+    foreach ($proyectosDesfasadosPresupuesto as $p) {
+        $alertas[] = [
+            'tipo'    => 'presupuesto',
+            'mensaje' => "💰 El proyecto \"{$p->nombre}\" ha superado el presupuesto.",
+            'color'   => 'rojo',
+        ];
+    }
+
+    $proyectosNoIniciados = Proyecto::where('estado', 'pendiente')
+        ->where('fecha_inicio', '<', Carbon::today()->format('Y-m-d'))->get();
+
+    foreach ($proyectosNoIniciados as $p) {
+        $alertas[] = [
+            'tipo'    => 'sin_iniciar',
+            'mensaje' => "🚨 El proyecto \"{$p->nombre}\" debió iniciar el " . Carbon::parse($p->fecha_inicio)->format('d/m/Y') . " y aún no ha comenzado.",
+            'color'   => 'amarillo',
+        ];
+    }
+
+    return view('admin.dashboard', compact(
+        'activosHoy',
+        'inactivosHoy',
+        'novedadesHoy',
+        'proyectosActivos',
+        'asistencias',
+        'asignaciones',
+        'alertas',
+        'hoy',
+        'totalEmpleados'
+    ));
+}
 
     // ─── PROYECTOS ────────────────────────────────────────────────────────────
 
-    /**
-     * Muestra el formulario para crear un nuevo proyecto.
-     */
-    public function crearProyecto()
-    {
-        return view('admin.crear-proyecto');
-    }
-
+   /**
+ * Muestra el formulario para crear un nuevo proyecto
+ * y la lista de todos los proyectos registrados.
+ */
+public function crearProyecto()
+{
+    $proyectos = Proyecto::orderBy('created_at', 'desc')->get();
+    return view('admin.crear-proyecto', compact('proyectos'));
+}
     /**
      * Guarda un nuevo proyecto en la base de datos.
      */
@@ -173,15 +175,19 @@ class AdminController extends Controller
     }
 
     // ─── TRABAJADORES ─────────────────────────────────────────────────────────
+/**
+ * Muestra el formulario para crear un nuevo trabajador
+ * y la lista de todos los trabajadores registrados.
+ */
+   public function crearTrabajador()
 
-    /**
-     * Muestra el formulario para crear un nuevo trabajador.
-     */
-    public function crearTrabajador()
-    {
-        return view('admin.crear-trabajador');
-    }
+{
 
+    $trabajadores = empleado::orderBy('created_at', 'desc')->get();
+
+    return view('admin.crear-Trabajador', compact('trabajadores'));
+
+}
     /**
      * Guarda un nuevo trabajador en la base de datos.
      * Crea primero el usuario y luego el perfil de empleado.
