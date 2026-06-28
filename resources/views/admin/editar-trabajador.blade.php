@@ -32,8 +32,26 @@
         .btn-gris{background:#27272a;color:#fff}
         .btn-gris:hover{background:#3f3f46}
         .alert-err{background:#7f1d1d;border:1px solid #dc2626;border-radius:8px;padding:12px 16px;color:#fca5a5;font-size:13px;margin-bottom:16px}
+        .user-menu{position:relative}
+        .user-btn{display:flex;align-items:center;gap:8px;cursor:pointer;background:none;border:none;padding:0}
+        .user-avatar{width:32px;height:32px;border-radius:50%;background:#27272a;border:1px solid #3f3f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#f59e0b}
+        .user-dropdown{display:none;position:absolute;right:0;top:42px;background:#18181b;border:1px solid #27272a;border-radius:10px;min-width:180px;z-index:100;overflow:hidden}
+        .user-dropdown.show{display:block}
+        .dropdown-item{padding:10px 16px;font-size:13px;color:#a1a1aa;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+        .dropdown-item:hover{background:#27272a;color:#fff}
     </style>
 </head>
+
+<script>
+function toggleDropdown() {
+    document.getElementById('userDropdown').classList.toggle('show');
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.user-menu')) {
+        document.getElementById('userDropdown').classList.remove('show');
+    }
+});
+</script>
 <body>
 
 <aside class="sidebar">
@@ -55,14 +73,27 @@
             <span class="nav-icon">👷</span> Nuevo Trabajador
         </a>
     </nav>
-    <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="nav-item" style="width:100%;background:none;border:none;text-align:left">
-                <span class="nav-icon">🚪</span> Cerrar sesión
+   <div class="user-menu">
+            <button class="user-btn" onclick="toggleDropdown()">
+                <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                <div style="text-align:left">
+                    <p style="color:#fff;font-size:12px;font-weight:700">{{ auth()->user()->name }}</p>
+                    <p style="color:#71717a;font-size:11px">Administrador</p>
+                </div>
             </button>
-        </form>
-    </div>
+            <div class="user-dropdown" id="userDropdown">
+                <div style="padding:12px 16px;border-bottom:1px solid #27272a">
+                    <p style="color:#fff;font-size:13px;font-weight:700">{{ auth()->user()->name }}</p>
+                    <p style="color:#71717a;font-size:11px">{{ auth()->user()->email }}</p>
+                </div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="dropdown-item" style="color:#f87171">
+                        🚪 Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
 </aside>
 
 <div class="main">
