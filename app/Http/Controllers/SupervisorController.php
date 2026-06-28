@@ -207,6 +207,42 @@ class SupervisorController extends Controller
     }
 
     /**
+ * Muestra el formulario para editar una asignación existente.
+ */
+public function editarAsignacion($id)
+{
+    $asignacion = Asignacion::with('empleado.user', 'proyecto')->findOrFail($id);
+    $proyectos  = Proyecto::where('estado', 'activo')->get();
+    $fecha      = $asignacion->fecha;
+
+    return view('supervisor.editar-asignacion', compact('asignacion', 'proyectos', 'fecha'));
+}
+
+/**
+ * Actualiza una asignación existente.
+ */
+public function actualizarAsignacion(Request $request, $id)
+{
+    $request->validate([
+        'proyecto_id' => 'required|exists:proyectos,id',
+        'hora_inicio' => 'required',
+        'hora_fin'    => 'required|after:hora_inicio',
+        'tarea'       => 'nullable|string',
+    ]);
+
+    $asignacion = Asignacion::findOrFail($id);
+    $asignacion->update([
+        'proyecto_id' => $request->proyecto_id,
+        'hora_inicio' => $request->hora_inicio,
+        'hora_fin'    => $request->hora_fin,
+        'tarea'       => $request->tarea,
+    ]);
+
+    return redirect()->route('supervisor.asignaciones', ['fecha' => $asignacion->fecha])
+        ->with('success', '✅ Asignación actualizada correctamente.');
+}
+
+    /**
      * Guarda una nueva novedad para un empleado.
      */
     public function guardarNovedad(Request $request)
