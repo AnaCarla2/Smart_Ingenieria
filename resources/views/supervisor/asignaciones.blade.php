@@ -166,6 +166,11 @@
                         <input type="text" name="tarea" placeholder="Ej: Soldadura columnas..."/>
                     </div>
                 </div>
+                {{-- Alerta de horas --}}
+                <div id="alertaHoras" style="display:none;background:#451a03;border:1px solid #f59e0b;border-radius:8px;padding:12px 16px;margin-bottom:12px">
+                    <p style="color:#f59e0b;font-size:13px;font-weight:700" id="alertaHorasTexto"></p>
+                </div>
+
                 <button type="submit" class="btn btn-amarillo">✅ Registrar asignación</button>
             </form>
         </div>
@@ -214,11 +219,16 @@
                                 {{ number_format($horas, 1) }}h
                             </td>
                             <td>
-                                @if($esExtra)
-                                    <span class="badge badge-amarillo">⚠️ Extra</span>
-                                @else
-                                    <span class="badge badge-verde">Normal</span>
-                                @endif
+                                @php
+                                    $horasNormales = min($horas, 8);
+                                    $horasExtras   = max(0, $horas - 8);
+                                @endphp
+                                <div>
+                                    <span class="badge badge-verde">✅ {{ number_format($horasNormales, 1) }}h normales</span>
+                                    @if($horasExtras > 0)
+                                        <span class="badge badge-amarillo" style="margin-top:4px;display:block">⏰ {{ number_format($horasExtras, 1) }}h extras</span>
+                                    @endif
+                                </div>
                             </td>
                             <td style="color:#a1a1aa;font-size:12px">{{ $asignacion->tarea ?? '—' }}</td>
                             <td>
@@ -258,6 +268,63 @@ document.addEventListener('click', function(e) {
         document.getElementById('userDropdown').classList.remove('show');
     }
 });
+
+// Verificar horas cuando cambia trabajador u hora fin
+function verificarHoras() {
+    const empleadoId = document.querySelector('select[name="empleado_id"]').value;
+    const horaFin    = document.querySelector('input[name="hora_fin"]').value;
+    const fecha      = '{{ $fecha }}';
+
+    if (!empleadoId || !horaFin) return;
+
+    fetch(`/supervisor/verificar-horas/${empleadoId}/${fecha}`)
+        .then(r => r.json())
+        .then(data => {
+            const div = document.getElementById('alertaHoras');
+            const texto = document.getElementById('alertaHorasTexto');
+
+            if (!data) { div.style.display = 'none'; return; }
+
+            const horasDia    = parseFloat(data.horas_dia) || 0;
+            const limiteDia   = parseFloat(data.limite_dia) || 8;
+            const horasSemana = parseFloat(data.horas_semana) || 0;
+            const limiteSemana= parseFloat(data.limite_semana) || 44;
+
+            const normales = Math.min(horasDia, limiteDia);
+            const extras   = Math.max(0, horasDia - limiteDia);
+
+            let html = '';
+            let esAlerta = false;
+
+            if (horasDia > 0) {
+                html += `<p style="color:#34d399;font-size:13px">✅ Horas normales hoy: <strong>${normales.toFixed(1)}h</strong> de ${limiteDia}h permitidas</p>`;
+            }
+
+            if (extras > 0) {
+                html += `<p style="color:#f59e0b;font-size:13px;margin-top:4px">⏰ Horas extras hoy: <strong>${extras.toFixed(1)}h</strong></p>`;
+                esAlerta = true;
+            }
+
+            if (horasSemana > limiteSemana) {
+                html += `<p style="color:#f87171;font-size:13px;margin-top:4px">🚨 Supera el máximo semanal: <strong>${horasSemana.toFixed(1)}h</strong> de ${limiteSemana}h permitidas</p>`;
+                esAlerta = true;
+            }
+
+            if (html) {
+                texto.innerHTML = html;
+                div.style.background = esAlerta ? '#451a03' : '#1c3a2b';
+                div.style.borderColor = esAlerta ? '#f59e0b' : '#16a34a';
+                div.style.display = 'block';
+            } else {
+                div.style.display = 'none';
+            }
+        })
+        .catch(() => {});
+}
+
+// Escuchar cambios en trabajador y hora fin
+document.querySelector('select[name="empleado_id"]')?.addEventListener('change', verificarHoras);
+document.querySelector('input[name="hora_fin"]')?.addEventListener('change', verificarHoras);
 </script>
 
 </body>

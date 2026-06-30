@@ -267,5 +267,55 @@ public function actualizarAsignacion(Request $request, $id)
 
         return redirect()->route('supervisor.novedades')
             ->with('success', '✅ Novedad registrada correctamente.');
+
+        }
+
+ /**
+ * Verifica si un trabajador ha superado las horas máximas permitidas.
+ * Usa la configuración de jornada vigente según la fecha.
+ */
+public function verificarHoras($empleadoId, $fecha)
+{
+    $jornada = \App\Models\ConfiguracionJornada::vigente($fecha);
+
+    if (!$jornada) {
+        return response()->json(['alerta' => false]);
     }
+
+    // Total horas trabajadas ese día
+    $horasDia = Asignacion::where('empleado_id', $empleadoId)
+        ->whereDate('fecha', $fecha)
+        ->get()
+        ->sum(fn($a) => $a->horasCalculadas());
+
+    // Total horas trabajadas esa semana
+    $inicioSemana = Carbon::parse($fecha)->startOfWeek()->format('Y-m-d');
+    $finSemana    = Carbon::parse($fecha)->endOfWeek()->format('Y-m-d');
+
+    $horasSemana = Asignacion::where('empleado_id', $empleadoId)
+        ->whereBetween('fecha', [$inicioSemana, $finSemana])
+        ->get()
+        ->sum(fn($a) => $a->horasCalculadas());
+
+    $alertas = [];
+
+    if ($horasDia > $jornada->horas_diarias + $jornada->horas_extra_diarias) {
+        $alertas[] = "⚠️ Supera el máximo diario permitido (" . ($jornada->horas_diarias + $jornada->horas_extra_diarias) . "h)";
+    } elseif ($horasDia > $jornada->horas_diarias) {
+        $alertas[] = "⏰ Horas extras registradas hoy: " . number_format($horasDia - $jornada->horas_diarias, 1) . "h";
+    }
+
+    if ($horasSemana > $jornada->horas_semanales) {
+        $alertas[] = "📅 Supera el máximo semanal (" . $jornada->horas_semanales . "h). Total semana: " . number_format($horasSemana, 1) . "h";
+    }
+
+    return response()->json([
+        'alerta'       => count($alertas) > 0,
+        'alertas'      => $alertas,
+        'horas_dia'    => number_format($horasDia, 1),
+        'horas_semana' => number_format($horasSemana, 1),
+        'limite_dia'   => $jornada->horas_diarias,
+        'limite_semana'=> $jornada->horas_semanales,
+    ]);
+}       
 }

@@ -31,7 +31,8 @@ Route::middleware(['auth', 'rol:supervisor'])->prefix('supervisor')->name('super
     Route::delete('/asignaciones/{id}', [SupervisorController::class, 'eliminarAsignacion'])->name('asignaciones.eliminar');
     Route::get('/asignaciones/{id}/editar', [SupervisorController::class, 'editarAsignacion'])->name('asignaciones.editar');
     Route::patch('/asignaciones/{id}', [SupervisorController::class, 'actualizarAsignacion'])->name('asignaciones.actualizar');
-    
+    Route::get('/verificar-horas/{empleadoId}/{fecha}', [SupervisorController::class, 'verificarHoras'])->name('verificar.horas');
+   
     // Novedades
     Route::get('/novedades', [SupervisorController::class, 'novedades'])->name('novedades');
     Route::post('/novedades/guardar', [SupervisorController::class, 'guardarNovedad'])->name('novedades.guardar');
