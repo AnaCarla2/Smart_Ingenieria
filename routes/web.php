@@ -32,7 +32,11 @@ Route::middleware(['auth', 'rol:supervisor'])->prefix('supervisor')->name('super
     Route::get('/asignaciones/{id}/editar', [SupervisorController::class, 'editarAsignacion'])->name('asignaciones.editar');
     Route::patch('/asignaciones/{id}', [SupervisorController::class, 'actualizarAsignacion'])->name('asignaciones.actualizar');
     Route::get('/verificar-horas/{empleadoId}/{fecha}', [SupervisorController::class, 'verificarHoras'])->name('verificar.horas');
-   
+    
+    // Corrección manual de asistencia
+    Route::get('/asistencia/{id}/editar', [SupervisorController::class, 'editarAsistencia'])->name('asistencia.editar');
+    Route::patch('/asistencia/{id}', [SupervisorController::class, 'actualizarAsistencia'])->name('asistencia.actualizar');
+
     // Novedades
     Route::get('/novedades', [SupervisorController::class, 'novedades'])->name('novedades');
     Route::post('/novedades/guardar', [SupervisorController::class, 'guardarNovedad'])->name('novedades.guardar');

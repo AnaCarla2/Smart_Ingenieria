@@ -317,5 +317,38 @@ public function verificarHoras($empleadoId, $fecha)
         'limite_dia'   => $jornada->horas_diarias,
         'limite_semana'=> $jornada->horas_semanales,
     ]);
-}       
+}  
+/**
+ * Muestra el formulario para editar un registro de asistencia.
+ * Útil cuando el trabajador olvida marcar entrada o salida.
+ */
+public function editarAsistencia($id)
+{
+    $asistencia = Asistencia::with('empleado.user')->findOrFail($id);
+    return view('supervisor.editar-asistencia', compact('asistencia'));
+}
+
+/**
+ * Actualiza un registro de asistencia manualmente.
+ */
+public function actualizarAsistencia(Request $request, $id)
+{
+    $request->validate([
+        'hora_entrada' => 'required',
+        'hora_salida'  => 'nullable|after:hora_entrada',
+        'estado'       => 'required|in:presente,ausente,permiso,incapacidad',
+        'observacion'  => 'nullable|string',
+    ]);
+
+    $asistencia = Asistencia::findOrFail($id);
+    $asistencia->update([
+        'hora_entrada' => $request->hora_entrada,
+        'hora_salida'  => $request->hora_salida,
+        'estado'       => $request->estado,
+        'observacion'  => $request->observacion,
+    ]);
+
+    return redirect()->route('supervisor.dashboard')
+        ->with('success', '✅ Asistencia de ' . $asistencia->empleado->user->name . ' actualizada correctamente.');
+}     
 }

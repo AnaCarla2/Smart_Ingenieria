@@ -150,6 +150,7 @@
                         <th>Entrada</th>
                         <th>Salida</th>
                         <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -164,6 +165,12 @@
                                 {{ $asistencia->hora_salida ? \Carbon\Carbon::parse($asistencia->hora_salida)->format('H:i') : '--:--' }}
                             </td>
                             <td><span class="badge badge-verde">Presente</span></td>
+                            <td>
+                                <a href="{{ route('supervisor.asistencia.editar', $asistencia->id) }}"
+                                    class="btn btn-gris" style="padding:5px 10px;font-size:11px">
+                                    ✏️ Corregir
+                                </a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
